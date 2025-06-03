@@ -1,12 +1,9 @@
 "use client";
 
 import React from "react";
-import { useState } from "react";
-import bcrypt from "bcryptjs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 export default function SignupForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -16,18 +13,31 @@ export default function SignupForm() {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
         const confirmPassword = formData.get('confirmPassword') as string;
-
+      
         if (password !== confirmPassword) {
-            alert("Passwords do not match");
-            return;
+          alert("Les mots de passe ne correspondent pas");
+          return;
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        console.log(`Sign up with the next information : 
-        Username: ${username}
-        Email: ${email}
-        Password: ${hashedPassword}`);
-    };
+      
+        try {
+          const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password }),
+          });
+      
+          const data = await res.json();
+      
+          if (!res.ok) {
+            alert(data.error || "Erreur lors de l'inscription");
+          } else {
+            alert("Inscription réussie, vous pouvez maintenant vous connecter !");
+            window.location.href = "/";
+          }
+        } catch (error) {
+          alert("Erreur réseau");
+        }
+      };
     return (
         <div className="shadow-input mt-20 mx-auto w-full max-w-md rounded-lg bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black z-10 outline outline-1 outline-neutral-200 dark:outline-neutral-800">
             <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">

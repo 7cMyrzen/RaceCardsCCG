@@ -1,26 +1,37 @@
 "use client";
 
 import React from "react";
-import { useState } from "react";
-import bcrypt from "bcryptjs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 export default function LoginForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const username = formData.get('username') as string;
+        const email = formData.get('email') as string;
         const password = formData.get('password') as string;
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        console.log(`Sign up with the next information : 
-        Username: ${username}
-        Password: ${hashedPassword}`);
-    };
+      
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+      
+          const data = await res.json();
+      
+          if (!res.ok) {
+            alert(data.error || "Erreur lors de la connexion");
+          } else {
+            alert("Connexion réussie !");
+            window.location.href = "/";
+          }
+        } catch (error) {
+          alert("Erreur réseau");
+        }
+      };
+      
     return (
         <div className="shadow-input mt-20 mx-auto w-full max-w-md rounded-lg bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black z-10 outline outline-1 outline-neutral-200 dark:outline-neutral-800">
             <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
@@ -33,8 +44,8 @@ export default function LoginForm() {
             <form className="shadow-input w-full rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black" onSubmit={handleSubmit}>
                 <div className="my-8">
                     <LabelInputContainer className="mb-4">
-                        <Label htmlFor="username">Nom d'utilisateur</Label>
-                        <Input id="username" name="username" placeholder="Joueur 1" type="text" />
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" name="email" placeholder="joueur1@rc.ccg" type="text" />
                     </LabelInputContainer>
                     <LabelInputContainer className="mb-4">
                         <Label htmlFor="password">Mot de passe</Label>
