@@ -3,7 +3,7 @@
 import { GameBar } from "@/components/game/GameBar";
 import React, { useState, useEffect } from 'react';
 import MapWithPlayers from "@/components/game/RaceTrack";
-import { trackPath1 } from "@/data/map";
+import { trackPath3 } from "@/data/map";
 
 
 export default function Page() {
@@ -12,9 +12,9 @@ export default function Page() {
       {/* Zone principale centrée */}
       <div className="h-[90%] w-full p-2 overflow-hidden flex justify-center items-center">
         <MapWithPlayers 
-            svgPath={trackPath1.svg}
-            mT={trackPath1.len}
-            turns={trackPath1.turns}
+            svgPath={trackPath3.svg}
+            mT={trackPath3.len}
+            turns={trackPath3.turns}
         />
     
     </div>

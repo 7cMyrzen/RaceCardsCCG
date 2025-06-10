@@ -90,6 +90,48 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
         }
       }
 
+      const movePlayer1ToDistance = (metersWalked: number) => {
+        if (!pathRef.current || mT === 0) return
+      
+        // Calculer la position sur le circuit avec modulo pour gérer les dépassements
+        const distanceOnCircuit = metersWalked % mT
+        const ratio = distanceOnCircuit / mT
+        const totalPathLength = pathRef.current.getTotalLength()
+        const distanceOnPath = ratio * totalPathLength
+        
+        const newPoint = getPointAtDistance(distanceOnPath)
+        setPlayer1Pos(newPoint)
+        setPlayer1Distance(metersWalked)
+        
+        console.log(`Player 1 - ${metersWalked}m (${distanceOnCircuit}m sur circuit), position:`, newPoint)
+      }
+      
+      const movePlayer2ToDistance = (metersWalked: number) => {
+        if (!pathRef.current || mT === 0) return
+      
+        // Calculer la position sur le circuit avec modulo pour gérer les dépassements
+        const distanceOnCircuit = metersWalked % mT
+        const ratio = distanceOnCircuit / mT
+        const totalPathLength = pathRef.current.getTotalLength()
+        const distanceOnPath = ratio * totalPathLength
+        
+        const newPoint = getPointAtDistance(distanceOnPath)
+        setPlayer2Pos(newPoint)
+        setPlayer2Distance(metersWalked)
+        
+        console.log(`Player 2 - ${metersWalked}m (${distanceOnCircuit}m sur circuit), position:`, newPoint)
+      }
+
+      const movePlayer = (player: "player1" | "player2", distance: number) => {
+        if (player === "player1") {
+          movePlayer1ToDistance(player1Distance + distance)
+        }
+
+        if (player === "player2") {
+          movePlayer2ToDistance(player2Distance + distance)
+        }
+      }
+
       const renderTurnSegments = () => {
         if (!pathRef.current || mT === 0) return null;
       
