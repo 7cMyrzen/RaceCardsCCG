@@ -68,19 +68,18 @@ export function TopNavbar() {
           <div className="flex items-center gap-4">
             {isLoggedIn ? (
               <>
-                <NavbarButton variant="secondary" href="/profile">Mon compte</NavbarButton>
+                <NavbarButton variant="primary" href="/profile">Compte</NavbarButton>
                 <NavbarButton
-                  variant="dark"
+                  variant="gradient"
                   onClick={handleLogout}
-                  style={{ cursor: "pointer" }}
                 >
-                  Se déconnecter
+                  Déconnexion
                 </NavbarButton>
               </>
             ) : (
               <>
-                <NavbarButton variant="secondary" href="/auth/login">Se connecter</NavbarButton>
-                <NavbarButton variant="primary" href="/auth/signup">S'inscrire</NavbarButton>
+                <NavbarButton variant="secondary" href="/auth/login">Connexion</NavbarButton>
+                <NavbarButton variant="primary" href="/auth/signup">Inscription</NavbarButton>
               </>
             )}
           </div>
@@ -117,18 +116,18 @@ export function TopNavbar() {
                     className="w-full"
                     href="/profile"
                   >
-                    Mon compte
+                    Compte
                   </NavbarButton>
                   <NavbarButton
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       handleLogout();
                     }}
-                    variant="dark"
+                    variant="gradient"
                     className="w-full"
                     style={{ cursor: "pointer" }}
                   >
-                    Se déconnecter
+                    Déconnexion
                   </NavbarButton>
                 </>
               ) : (
@@ -139,7 +138,7 @@ export function TopNavbar() {
                     className="w-full"
                     href="/auth/login"
                   >
-                    Se connecter
+                   Connexion
                   </NavbarButton>
                   <NavbarButton
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -147,7 +146,7 @@ export function TopNavbar() {
                     className="w-full"
                     href="/auth/signup"
                   >
-                    S'inscrire
+                    Inscription
                   </NavbarButton>
                 </>
               )}
