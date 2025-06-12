@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
 
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
 
-    const user = await prisma.user.findUnique({
+    const userResponse = await prisma.user.findUnique({
+
       where: { id: decoded.id },
       select: {
         id: true,
@@ -22,10 +23,30 @@ export async function GET(req: NextRequest) {
         nb_combat: true,
         nb_victoires: true,
         nb_defaites: true,
+        profile_pic: true,
+        money: true,
       },
     });
 
-    if (!user) {
+    const nbcarcard = await prisma.userCar.count({
+      where: {
+        user_id: decoded.id,
+      },
+    });
+    const nbupgradecard = await prisma.userUpgrade.count({
+      where: {
+        user_id: decoded.id,
+      },
+    });
+    const nb_cartes = nbcarcard + nbupgradecard;
+    const user = {
+      ...userResponse,
+      nb_cartes,
+    }
+    
+    
+
+    if (!userResponse) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 

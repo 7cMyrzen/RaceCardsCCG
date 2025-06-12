@@ -9,17 +9,21 @@ datasource db {
 }
 
 model User {
-  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username     String @unique
-  email        String @unique
-  password     String
-  profile_pic  Int    @default(1)
-  role         Role   @default(user)
-  money        Int    @default(30)
-  nb_combat    Int    @default(0)
-  nb_cartes    Int    @default(3)
-  nb_victoires Int    @default(0)
-  nb_defaites  Int    @default(0)
+  id                            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username                      String        @unique
+  email                         String        @unique
+  password                      String
+  profile_pic                   Int           @default(1)
+  role                          Role          @default(user)
+  money                         Int           @default(30)
+  nb_combat                     Int           @default(0)
+  nb_victoires                  Int           @default(0)
+  nb_defaites                   Int           @default(0)
+  Deck                          Deck[]
+  Result_Result_looser_idToUser Result[]      @relation("Result_looser_idToUser")
+  Result_Result_winner_idToUser Result[]      @relation("Result_winner_idToUser")
+  UserCar                       UserCar[]
+  UserUpgrade                   UserUpgrade[]
 }
 
 model BrakingZone {
@@ -28,18 +32,167 @@ model BrakingZone {
   start    Int
   finish   Int
   type     String
-  Tracks   Tracks @relation(fields: [track_id], references: [id], onDelete: Cascade)
+  Tracks   Track  @relation(fields: [track_id], references: [id], onDelete: Cascade)
 }
 
-model Tracks {
-  id          Int           @id @default(autoincrement())
+model Track {
+  id          Int           @id(map: "Tracks_pkey") @default(autoincrement())
   name        String
   lenght      Int
   svg         String
   BrakingZone BrakingZone[]
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Ability {
+  id          BigInt       @id @default(autoincrement())
+  name        String
+  description String
+  cost        Int          @db.SmallInt
+  effect_id   BigInt
+  Effect      Effect       @relation(fields: [effect_id], references: [id], onDelete: Cascade)
+  CarAbility  CarAbility[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model CarAbility {
+  id         BigInt  @id @default(autoincrement())
+  card_id    BigInt
+  ability_id BigInt
+  Ability    Ability @relation(fields: [ability_id], references: [id], onDelete: Cascade)
+  CarCard    CarCard @relation(fields: [card_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model CarCard {
+  id               BigInt       @id(map: "CarCards_pkey") @default(autoincrement())
+  name             String
+  description      String
+  img_path         String
+  level            Int          @db.SmallInt
+  evolution        Int          @db.SmallInt
+  cost             Int          @db.SmallInt
+  max_speed        Int          @db.SmallInt
+  weight           Int          @db.SmallInt
+  power            Int          @db.SmallInt
+  zero_hundred     Float        @db.Real
+  drag_coefficient Float        @db.Real
+  frontal_area     Float        @db.Real
+  rrc              Float        @db.Real
+  series_id        BigInt?
+  CarAbility       CarAbility[]
+  Series           Series?      @relation(fields: [series_id], references: [id], onDelete: Cascade, map: "CarCards_series_id_fkey")
+  DeckCar          DeckCar[]
+  UserCar          UserCar[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Deck {
+  id          BigInt        @id @default(autoincrement())
+  name        String
+  is_active   Boolean       @default(false)
+  user_id     String        @db.Uuid
+  User        User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  DeckCar     DeckCar[]
+  DeckUpgrade DeckUpgrade[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DeckCar {
+  id      BigInt  @id @default(autoincrement())
+  deck_id BigInt
+  car_id  BigInt
+  CarCard CarCard @relation(fields: [car_id], references: [id], onDelete: Cascade)
+  Deck    Deck    @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DeckUpgrade {
+  id          BigInt      @id @default(autoincrement())
+  deck_id     BigInt
+  upgrade_id  BigInt
+  Deck        Deck        @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+  UpgradeCard UpgradeCard @relation(fields: [upgrade_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Effect {
+  id               BigInt        @id(map: "Effects_pkey") @default(autoincrement())
+  is_upgrade       Boolean
+  max_speed        String?
+  weight           String?
+  power            String?
+  zero_hundred     String?
+  drag_coefficient String?
+  frontal_area     String?
+  rrc              String?
+  actual_speed     String?
+  Ability          Ability[]
+  UpgradeCard      UpgradeCard[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Result {
+  id                          BigInt   @id @default(autoincrement())
+  winner_id                   String   @db.Uuid
+  looser_id                   String   @db.Uuid
+  date_played                 DateTime @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamp(6)
+  User_Result_looser_idToUser User     @relation("Result_looser_idToUser", fields: [looser_id], references: [id], onDelete: Cascade)
+  User_Result_winner_idToUser User     @relation("Result_winner_idToUser", fields: [winner_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Series {
+  id          BigInt    @id @default(autoincrement())
+  name        String
+  description String
+  CarCard     CarCard[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UpgradeCard {
+  id          BigInt        @id @default(autoincrement())
+  name        String
+  description String
+  img_path    String
+  evolution   Int           @db.SmallInt
+  cost        Int           @db.SmallInt
+  effect_id   BigInt
+  DeckUpgrade DeckUpgrade[]
+  Effect      Effect        @relation(fields: [effect_id], references: [id], onDelete: Cascade)
+  UserUpgrade UserUpgrade[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserCar {
+  id      BigInt  @id @default(autoincrement())
+  user_id String  @db.Uuid
+  car_id  BigInt
+  CarCard CarCard @relation(fields: [car_id], references: [id], onDelete: Cascade)
+  User    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserUpgrade {
+  id          BigInt      @id @default(autoincrement())
+  user_id     String      @db.Uuid
+  upgrade_id  BigInt
+  UpgradeCard UpgradeCard @relation(fields: [upgrade_id], references: [id], onDelete: Cascade)
+  User        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   user
   admin
+}
+
+model Game {
+  id              BigInt   @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  player1Id       String   @db.Uuid
+  player2Id       String   @db.Uuid
+  currentPlayerId String   @db.Uuid
+  circuitId       Int?     // id du circuit (Track)
+  state           Json?    // état de la partie (optionnel, pour stocker l'avancement, les Cr, etc.)
 }

@@ -21,7 +21,7 @@ export function AccountCreated() {
           <CheckCircle2Icon />
           <AlertTitle>Succès !</AlertTitle>
           <AlertDescription>
-            Votre compte a été créé avec succès.
+            Votre vous êtes connecté avec succès, vous allez être redirigé vers la page d'accueil.
           </AlertDescription>
         </Alert>
       </div>

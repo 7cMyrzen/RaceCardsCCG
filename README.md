@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jeu de Cartes Automobile - Next.js
 
-## Getting Started
+Ce projet est un jeu de cartes automobile multijoueur en temps réel, développé avec Next.js, Prisma, PostgreSQL et Pusher. Il propose une expérience de course stratégique, de collection et de gestion de decks, avec une interface moderne et responsive.
 
-First, run the development server:
+## Fonctionnalités principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Gestion de compte** : inscription, connexion, profil, avatar, statistiques, historique de parties.
+- **Decks et cartes** : création, personnalisation, activation, suppression de decks. Collection de cartes véhicules et upgrades.
+- **Matchmaking temps réel** : file d'attente, recherche d'adversaire, synchronisation via Pusher.
+- **Course 1v1** : choix du véhicule, accélération, freinage, gestion physique réaliste (vitesse, distance, virages, pénalités).
+- **Effets et upgrades** : application d'effets permanents ou temporaires sur les véhicules.
+- **Économie** : diamants, argent, boutique de boosters, récompenses selon les actions et les victoires.
+- **Historique** : suivi des parties, victoires, défaites, adversaires, date.
+- **Pages dédiées** : profil, boutique, quêtes, historique, decks.
+- **Abandon de partie** : bouton d'abandon avec confirmation, gestion de la défaite immédiate.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prérequis
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js >= 18
+- PostgreSQL (local ou cloud)
+- Un compte Pusher (pour le temps réel)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation
 
-## Learn More
+1. **Cloner le dépôt**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   git clone <url-du-repo>
+   cd <nom-du-repo>
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Installer les dépendances**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. **Configurer les variables d'environnement**
+   Crée un fichier `.env.local` à la racine avec :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```env
+   DATABASE_URL=postgresql://user:password@host:port/dbname
+   JWT_SECRET=une_chaine_secrete_complexe
+   PUSHER_KEY=xxx
+   PUSHER_SECRET=xxx
+   PUSHER_APP_ID=xxx
+   PUSHER_CLUSTER=xxx
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Configurer la base de données**
+
+   - Lancer les migrations Prisma :
+     ```bash
+     npx prisma migrate deploy
+     ```
+   - (Optionnel) Générer le client Prisma :
+     ```bash
+     npx prisma generate
+     ```
+
+5. **Lancer le projet en développement**
+   ```bash
+   npm run dev
+   ```
+   Le site sera accessible sur [http://localhost:3000](http://localhost:3000)
+
+## Déploiement sur Vercel
+
+1. Pousse le projet sur GitHub.
+2. Connecte le repo à Vercel (https://vercel.com/import).
+3. Renseigne les variables d'environnement dans le dashboard Vercel.
+4. Après le premier déploiement, lance la migration Prisma sur la base distante :
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+## Commandes utiles
+
+- `npm run dev` : démarre le serveur Next.js en mode développement
+- `npm run build` : build de l'application pour la production
+- `npm start` : démarre le serveur en mode production
+- `npx prisma migrate deploy` : applique les migrations sur la base
+- `npx prisma studio` : interface d'administration de la base
+
+## Structure du projet
+
+- `src/app/` : pages Next.js (profil, shop, game, etc.)
+- `src/components/` : composants UI et jeu (cartes, timeline, etc.)
+- `src/lib/` : utilitaires, Prisma, auth
+- `src/app/api/` : routes API Next.js (gestion, matchmaking, course, etc.)
+- `prisma/schema.prisma` : schéma de la base de données
+- `public/images/` : images des cartes, decks, UI
+
+## Notes de sécurité
+
+- Change toujours la valeur de `JWT_SECRET` en production.
+- Utilise une base PostgreSQL sécurisée et accessible depuis Vercel.
+- Les tokens JWT sont stockés en cookie httpOnly.
+
+## Limitations connues
+
+- Les WebSockets natifs ne sont pas supportés sur Vercel : Pusher est utilisé pour le temps réel.
+- Les quêtes sont en cours de développement.
+
+## Contribution
+
+Les contributions sont les bienvenues. Ouvre une issue ou une pull request pour toute suggestion ou amélioration.
+
+## Licence
+
+Ce projet est sous licence MIT.

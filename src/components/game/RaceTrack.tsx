@@ -16,18 +16,18 @@ interface MapWithPlayersProps {
     svgPath: string // d : string du <path>
     mT: number // longueur totale du chemin en mètres
     turns: Turn[]
+    player1Distance?: number
+    player2Distance?: number
 }
 
 
-const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) => {
+const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns, player1Distance, player2Distance }) => {
     const pathRef = useRef<SVGPathElement | null>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
 
     const [player1Pos, setPlayer1Pos] = useState<Point>({ x: 0, y: 0 })
     const [player2Pos, setPlayer2Pos] = useState<Point>({ x: 0, y: 0 })
     const [actualStartPoint, setActualStartPoint] = useState<Point>({ x: 0, y: 0 })
-    const [player1Distance, setPlayer1Distance] = useState<number>(0)
-    const [player2Distance, setPlayer2Distance] = useState<number>(0)
     const [pathLength, setPathLength] = useState<number>(0)
 
     // ViewBox ajusté pour votre tracé spécifique
@@ -76,6 +76,13 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
         return () => clearTimeout(timer)
     }, [svgPath])
 
+    useEffect(() => {
+        if (typeof player1Distance === 'number') movePlayer1ToDistance(player1Distance)
+    }, [player1Distance, mT, svgPath])
+    useEffect(() => {
+        if (typeof player2Distance === 'number') movePlayer2ToDistance(player2Distance)
+    }, [player2Distance, mT, svgPath])
+
     const getPointAtDistance = (distance: number): Point => {
         if (!pathRef.current) return actualStartPoint
     
@@ -101,7 +108,6 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
         
         const newPoint = getPointAtDistance(distanceOnPath)
         setPlayer1Pos(newPoint)
-        setPlayer1Distance(metersWalked)
         
         console.log(`Player 1 - ${metersWalked}m (${distanceOnCircuit}m sur circuit), position:`, newPoint)
       }
@@ -117,7 +123,6 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
         
         const newPoint = getPointAtDistance(distanceOnPath)
         setPlayer2Pos(newPoint)
-        setPlayer2Distance(metersWalked)
         
         console.log(`Player 2 - ${metersWalked}m (${distanceOnCircuit}m sur circuit), position:`, newPoint)
       }
@@ -185,7 +190,7 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
       };
 
       return (
-        <div className="flex flex-col justify-center items-center h-full bg-gray-900 relative">
+        <div className="flex flex-col justify-center items-center h-full bg-gray-900 relative rounded-2xl">
       {/* Conteneur SVG */}
       <div 
         ref={containerRef}
@@ -244,7 +249,7 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
             textAnchor="middle"
             className="font-bold"
           >
-            J1
+            Adversaire
           </text>
 
           {/* Joueur 2 (bleu) */}
@@ -264,7 +269,7 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns }) =
             textAnchor="middle"
             className="font-bold"
           >
-            J2
+            Vous
           </text>
         </svg>
       </div>

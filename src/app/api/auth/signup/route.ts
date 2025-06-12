@@ -27,6 +27,54 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const userId = user.id;
+
+    // 2. Cartes à ajouter
+    const carIds = [1, 2, 6];
+    const upgradeIds = [1, 2];
+
+    // 3. Ajout dans UserCar
+    await prisma.userCar.createMany({
+      data: carIds.map((carId) => ({
+        user_id: userId,
+        car_id: carId,
+      })),
+    });
+
+    // 4. Ajout dans UserUpgrade
+    await prisma.userUpgrade.createMany({
+      data: upgradeIds.map((upgradeId) => ({
+        user_id: userId,
+        upgrade_id: upgradeId,
+      })),
+    });
+
+    // 5. Création du deck
+    const deck = await prisma.deck.create({
+      data: {
+        name: "default",
+        is_active: true,
+        user_id: userId,
+      },
+    });
+
+    const deckId = deck.id;
+
+    // 6. Ajout des cartes dans le deck
+    await prisma.deckCar.createMany({
+      data: carIds.map((carId) => ({
+        deck_id: deckId,
+        car_id: carId,
+      })),
+    });
+
+    await prisma.deckUpgrade.createMany({
+      data: upgradeIds.map((upgradeId) => ({
+        deck_id: deckId,
+        upgrade_id: upgradeId,
+      })),
+    });
+
     // Créer le token JWT
     const token = jwt.sign(
       { id: user.id, email: user.email },

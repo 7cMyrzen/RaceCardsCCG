@@ -4,8 +4,12 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AccountCreated } from './Alert';
+import { useState } from "react";
 
 export default function SignupForm() {
+    const [accountCreated, setAccountCreated] = useState(false);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -31,8 +35,10 @@ export default function SignupForm() {
           if (!res.ok) {
             alert(data.error || "Erreur lors de l'inscription");
           } else {
-            alert("Inscription réussie, vous pouvez maintenant vous connecter !");
-            window.location.href = "/";
+            setAccountCreated(true);
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 2000);
           }
         } catch (error) {
           alert("Erreur réseau");
@@ -40,6 +46,7 @@ export default function SignupForm() {
       };
     return (
         <div className="shadow-input mt-20 mx-auto w-full max-w-md rounded-lg bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black z-10 outline outline-1 outline-neutral-200 dark:outline-neutral-800">
+            {accountCreated && <AccountCreated />}
             <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
                 Bienvenue sur RaceCards
             </h2>

@@ -1,13 +1,14 @@
 'use client';
-
+ 
 import { useEffect, useState } from 'react';
 import { TopNavbar } from "@/components/website/Navbar";
 import { Footer } from "@/components/website/Footer";
-
+import { Profile } from '@/components/website/Profile';
+ 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-
+ 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -15,23 +16,23 @@ export default function ProfilePage() {
           method: 'GET',
           credentials: 'include', // IMPORTANT : pour envoyer les cookies httpOnly
         });
-
+ 
         if (!res.ok) {
           const { error } = await res.json();
           setError(error || 'Erreur inconnue');
           return;
         }
-
+ 
         const data = await res.json();
         setUser(data);
       } catch (err) {
         setError('Erreur de chargement');
       }
     };
-
+ 
     fetchProfile();
   }, []);
-
+ 
   if (error) {
     return (
       <div className="bg-black h-screen w-screen flex items-center justify-center text-red-500 p-4 rounded shadow-md">
@@ -39,7 +40,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
+ 
   if (!user) {
     return (
       <div className="bg-black h-screen w-screen flex items-center justify-center text-white p-4 shadow-md">
@@ -52,13 +53,13 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
-
+ 
+ 
   return (
     <div className="pt-32 flex flex-col center min-h-screen">
       <TopNavbar />
-      <main className="flex-grow max-w-[90%] mx-auto">
-          
+      <main className="flex-grow w-[90%] mx-auto">
+          <Profile user={user} />
       </main>
       <Footer />
     </div>
