@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { GameBar } from '@/components/game/GameBar';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
@@ -60,6 +61,9 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+      <div className="h-[10%] w-[90%] max-w-md mx-auto fixed bottom-0">
+        <GameBar />
+      </div>
     </div>
   );
 } 

@@ -131,7 +131,11 @@ export default function Page() {
       if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'activation');
       fetchDecks();
     } catch (err) {
-      alert(err.message || 'Erreur lors de l\'activation du deck');
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert('Erreur lors de l\'activation du deck');
+      }
     }
   };
 

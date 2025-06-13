@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { GameBar } from '@/components/game/GameBar';
 
 export default function GameHistoryPage() {
   const [results, setResults] = useState<any[]>([]);
@@ -57,6 +58,9 @@ export default function GameHistoryPage() {
           </tbody>
         </table>
       )}
+      <div className="h-[10%] w-[90%] max-w-md mx-auto fixed bottom-0">
+        <GameBar />
+      </div>
     </div>
   );
 } 

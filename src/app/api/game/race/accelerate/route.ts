@@ -5,7 +5,8 @@ import { safeJsonResponse } from '@/lib/api-utils';
 import Pusher from 'pusher';
 import { trackPath1, trackPath2, trackPath3 } from '@/data/map';
 import { calculerVitesseEtDistanceApres5s, applyEffectsToCarStats } from '@/lib/physics/acceleration';
-import type { Effect } from '@prisma/client';
+import type { GameState, PlayerState, Penalty } from '@/types/game';
+import type { Effect, CarCard } from '@prisma/client';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -31,12 +32,15 @@ export async function POST(req: NextRequest) {
       return safeJsonResponse({ error: "Ce n'est pas votre tour" }, { status: 403 });
     }
 
-    let state = game.state || {};
-    if (typeof state === 'string') {
-      try { state = JSON.parse(state); } catch { state = {}; }
+    let stateRaw = game.state;
+    if (typeof stateRaw === 'string') {
+      try { stateRaw = JSON.parse(stateRaw); } catch { stateRaw = {}; }
     }
-    if (typeof state !== 'object' || state === null) state = {};
-    let players = (state as any).players || {};
+    if (!stateRaw || typeof stateRaw !== 'object' || Array.isArray(stateRaw)) {
+      stateRaw = { players: {}, turn: 1 };
+    }
+    const state = stateRaw as unknown as GameState;
+    let players: Record<string, PlayerState> = state.players || {};
     const player = players[user.id];
     if (!player || !player.car) {
       return safeJsonResponse({ error: 'Aucune voiture sélectionnée' }, { status: 400 });
@@ -95,7 +99,7 @@ export async function POST(req: NextRequest) {
     // Récompense : 100 diamants par tour de map franchi
     if (newLap > oldLap) player.diamonds += 100 * (newLap - oldLap);
     // Vérifier la pénalité virage sur tout le segment parcouru (modulo mT)
-    let penalty = null;
+    let penalty: Penalty | null = null;
     let crash = false;
     for (const turn of map.turns) {
       for (const interval of turn.m) {
@@ -115,10 +119,8 @@ export async function POST(req: NextRequest) {
               const limKmh = Math.round(limit * 3.6);
               if (kmh - limKmh > 20) {
                 player.speed = 0;
-                player.immobilized = 1;
                 crash = true;
                 penalty = {
-                  type: turn.type,
                   limit: limKmh,
                   speed: kmh,
                   crash: true,
@@ -128,7 +130,6 @@ export async function POST(req: NextRequest) {
               } else {
                 player.speed = limKmh;
                 penalty = {
-                  type: turn.type,
                   limit: limKmh,
                   speed: kmh,
                   crash: false,
@@ -170,7 +171,7 @@ export async function POST(req: NextRequest) {
 
     // Vérifier la victoire (5 tours)
     if (player.lap >= 5) {
-      (state as Record<string, any>).winnerId = user.id;
+      (state as GameState).winnerId = user.id;
       await prisma.game.update({
         where: { id: game.id },
         data: { state },

@@ -757,10 +757,10 @@ export default function RaceGamePage() {
   );
 }
 
-function sanitizeBigInt(obj) {
+function sanitizeBigInt(obj: any): any {
   if (Array.isArray(obj)) return obj.map(sanitizeBigInt);
   if (obj && typeof obj === 'object') {
-    const out = {};
+    const out: any = {};
     for (const k in obj) {
       out[k] = typeof obj[k] === 'bigint' ? obj[k].toString() : sanitizeBigInt(obj[k]);
     }

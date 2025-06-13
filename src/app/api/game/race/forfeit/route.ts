@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth-utils';
 import { safeJsonResponse } from '@/lib/api-utils';
 import Pusher from 'pusher';
+import type { GameState } from '@/types/game';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -23,12 +24,16 @@ export async function POST(req: NextRequest) {
     // Déterminer le gagnant (l'autre joueur)
     const winnerId = game.player1Id === user.id ? game.player2Id : game.player1Id;
     // Mettre à jour le state
-    let state = game.state || {};
-    if (typeof state === 'string') {
-      try { state = JSON.parse(state); } catch { state = {}; }
+    let stateRaw = game.state;
+    if (typeof stateRaw === 'string') {
+      try { stateRaw = JSON.parse(stateRaw); } catch { stateRaw = {}; }
     }
-    state.winnerId = winnerId;
-    await prisma.game.update({ where: { id: game.id }, data: { state } });
+    if (!stateRaw || typeof stateRaw !== 'object' || Array.isArray(stateRaw)) {
+      stateRaw = { players: {}, turn: 1 };
+    }
+    const state = stateRaw as unknown as GameState;
+    (state as GameState).winnerId = winnerId;
+    await prisma.game.update({ where: { id: game.id }, data: { state: state as any } });
     // Enregistrer le résultat
     await prisma.result.create({
       data: {

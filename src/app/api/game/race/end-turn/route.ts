@@ -5,6 +5,7 @@ import { safeJsonResponse } from '@/lib/api-utils';
 import Pusher from 'pusher';
 import { trackPath1, trackPath2, trackPath3 } from '@/data/map';
 import { calculerVitesseEtDistanceApres5s } from '@/lib/physics/acceleration';
+import type { GameState, PlayerState, Penalty } from '@/types/game';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -30,12 +31,8 @@ export async function POST(req: NextRequest) {
     }
 
     // --- LOGIQUE DE PENALITE VIRAGE ---
-    let state = game.state || {};
-    if (typeof state === 'string') {
-      try { state = JSON.parse(state); } catch { state = {}; }
-    }
-    if (typeof state !== 'object' || state === null) state = {};
-    let players = (state as any).players || {};
+    let state: GameState = game.state as GameState || { players: {}, turn: 1 };
+    let players: Record<string, PlayerState> = state.players || {};
     const player = players[user.id];
     if (!player || !player.car) {
       // Pas de voiture choisie, rien à faire
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest) {
     const vmaxMs = vmax / 3.6;
 
     // Chercher si on est dans un virage
-    let penalty = null;
+    let penalty: Penalty | null = null;
     for (const turn of map.turns) {
       for (const interval of turn.m) {
         const [start, end] = interval.split('-').map(Number);
@@ -72,7 +69,6 @@ export async function POST(req: NextRequest) {
             // Appliquer un malus simple : réduction de la vitesse de 30% et message
             player.speed = Math.round(speedMs * 0.7 * 3.6); // repasse en km/h
             penalty = {
-              type: turn.type,
               limit: Math.round(limit * 3.6),
               speed: speed,
               message: `Dépassement de la limite dans un virage ${turn.type} ! Vitesse réduite.`
@@ -80,48 +76,6 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-    }
-
-    // Gestion immobilisation (crash)
-    if (player.immobilized && player.immobilized > 0) {
-      player.immobilized -= 1;
-      // Passe le tour sans action
-      const nextPlayerId = game.currentPlayerId === game.player1Id ? game.player2Id : game.player1Id;
-      await prisma.game.update({
-        where: { id: game.id },
-        data: { currentPlayerId: nextPlayerId, state },
-      });
-      // Notifier via Pusher
-      function sanitizeBigInt(obj: any): any {
-        if (Array.isArray(obj)) return obj.map(sanitizeBigInt);
-        if (obj && typeof obj === 'object') {
-          const out: any = {};
-          for (const k in obj) {
-            out[k] = typeof obj[k] === 'bigint' ? obj[k].toString() : sanitizeBigInt(obj[k]);
-          }
-          return out;
-        }
-        return obj;
-      }
-      await pusher.trigger(`game-${game.id}`, 'turn-changed', sanitizeBigInt({
-        gameId: game.id,
-        currentPlayerId: nextPlayerId,
-        penalty: {
-          crash: true,
-          immobilized: player.immobilized,
-          message: `Vous êtes immobilisé suite à un crash ! Tours restants : ${player.immobilized}`
-        }
-      }));
-      return safeJsonResponse({
-        gameId: game.id,
-        currentPlayerId: nextPlayerId,
-        penalty: {
-          crash: true,
-          immobilized: player.immobilized,
-          message: `Vous êtes immobilisé suite à un crash ! Tours restants : ${player.immobilized}`
-        },
-        message: `Vous êtes immobilisé suite à un crash ! Tours restants : ${player.immobilized}`
-      });
     }
 
     // Passe le tour à l'autre joueur

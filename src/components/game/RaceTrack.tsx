@@ -129,11 +129,11 @@ const MapWithPlayers: React.FC<MapWithPlayersProps> = ({ svgPath, mT, turns, pla
 
       const movePlayer = (player: "player1" | "player2", distance: number) => {
         if (player === "player1") {
-          movePlayer1ToDistance(player1Distance + distance)
+          movePlayer1ToDistance((player1Distance ?? 0) + distance)
         }
 
         if (player === "player2") {
-          movePlayer2ToDistance(player2Distance + distance)
+          movePlayer2ToDistance((player2Distance ?? 0) + distance)
         }
       }
 

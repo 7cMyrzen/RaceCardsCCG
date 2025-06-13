@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth-utils';
 import { safeJsonResponse } from '@/lib/api-utils';
 import Pusher from 'pusher';
+import type { GameState } from '@/types/game';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -27,10 +28,14 @@ export async function POST(req: NextRequest) {
     // Vérifier que la partie existe
     const game = await prisma.game.findUnique({ where: { id: Number(gameId) } });
     if (!game) return safeJsonResponse({ error: 'Partie introuvable' }, { status: 404 });
-    let state = game.state || {};
-    if (typeof state === 'string') {
-      try { state = JSON.parse(state); } catch { state = {}; }
+    let stateRaw = game.state;
+    if (typeof stateRaw === 'string') {
+      try { stateRaw = JSON.parse(stateRaw); } catch { stateRaw = {}; }
     }
+    if (!stateRaw || typeof stateRaw !== 'object' || Array.isArray(stateRaw)) {
+      stateRaw = { players: {}, turn: 1 };
+    }
+    const state = stateRaw as unknown as GameState;
     // Sécurisation de l'accès à state.players
     let players: Record<string, any> = {};
     if (typeof state === 'object' && state !== null && 'players' in state && typeof state.players === 'object' && state.players !== null) {

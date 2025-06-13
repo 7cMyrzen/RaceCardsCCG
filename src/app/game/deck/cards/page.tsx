@@ -111,39 +111,43 @@ export default function Page() {
     );
   }
 
-  const renderCardsSection = (cars: Card[], upgrades: Card[]) => (
-    <>
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">Véhicules</h3>
-      <div className="flex flex-wrap justify-center gap-4 mb-6">
-        {cars.length > 0 ? cars.map(card => (
-          <div
-            key={card.id}
-            className="w-[120px] sm:w-[150px] md:w-[180px] cursor-pointer"
-            onClick={() => setSelectedCard(card)}
-          >
-            <Tilt3DCard imageUrl={getImageUrl(card)} />
-          </div>
-        )) : (
-          <p className="text-center text-gray-500">Aucun véhicule {activeTab === 'owned' ? 'possédé' : 'disponible'}</p>
-        )}
-      </div>
+  const renderCardsSection = (cars: Card[], upgrades: Card[]) => {
+    const uniqueCars = Array.from(new Map(cars.map(card => [card.id, card])).values());
 
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">Améliorations</h3>
-      <div className="flex flex-wrap justify-center gap-4">
-        {upgrades.length > 0 ? upgrades.map(card => (
-          <div
-            key={card.id}
-            className="w-[120px] sm:w-[150px] md:w-[180px] cursor-pointer"
-            onClick={() => setSelectedCard(card)}
-          >
-            <Tilt3DCard imageUrl={getImageUrl(card)} />
-          </div>
-        )) : (
-          <p className="text-center text-gray-500">Aucune amélioration {activeTab === 'owned' ? 'possédée' : 'disponible'}</p>
-        )}
-      </div>
-    </>
-  );
+    return (
+      <>
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">Véhicules</h3>
+        <div className="flex flex-wrap justify-center gap-4 mb-6">
+          {uniqueCars.length > 0 ? uniqueCars.map(card => (
+            <div
+              key={card.id}
+              className="w-[120px] sm:w-[150px] md:w-[180px] cursor-pointer"
+              onClick={() => setSelectedCard(card)}
+            >
+              <Tilt3DCard imageUrl={getImageUrl(card)} />
+            </div>
+          )) : (
+            <p className="text-center text-gray-500">Aucun véhicule {activeTab === 'owned' ? 'possédé' : 'disponible'}</p>
+          )}
+        </div>
+
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">Améliorations</h3>
+        <div className="flex flex-wrap justify-center gap-4">
+          {upgrades.length > 0 ? upgrades.map(card => (
+            <div
+              key={card.id}
+              className="w-[120px] sm:w-[150px] md:w-[180px] cursor-pointer"
+              onClick={() => setSelectedCard(card)}
+            >
+              <Tilt3DCard imageUrl={getImageUrl(card)} />
+            </div>
+          )) : (
+            <p className="text-center text-gray-500">Aucune amélioration {activeTab === 'owned' ? 'possédée' : 'disponible'}</p>
+          )}
+        </div>
+      </>
+    );
+  };
 
   return (
     <>
