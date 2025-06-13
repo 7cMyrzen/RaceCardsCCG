@@ -5,6 +5,7 @@ import { safeJsonResponse } from '@/lib/api-utils';
 import Pusher from 'pusher';
 import { trackPath1, trackPath2, trackPath3 } from '@/data/map';
 import { calculerVitesseEtDistanceApres5s, applyEffectsToCarStats } from '@/lib/physics/acceleration';
+import type { Effect } from '@prisma/client';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       ...(player.upgrades ? player.upgrades.map((u: any) => u.effectId) : []),
       ...(player.tempEffects ? player.tempEffects.map((e: any) => e.effectId) : [])
     ];
-    let effects = [];
+    let effects: Effect[] = [];
     if (effectIds.length > 0) {
       effects = await prisma.effect.findMany({ where: { id: { in: effectIds } } });
     }
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
     player.distance = Math.round(oldDistance + distance);
     const newDistance = player.distance;
     // Gestion des tours
-    const mT = map.len || map.mT;
+    const mT = map.len;
     const oldLap = Math.floor(oldDistance / mT);
     const newLap = Math.floor(newDistance / mT);
     if (!player.lap) player.lap = 0;
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
 
     // Vérifier la victoire (5 tours)
     if (player.lap >= 5) {
-      state.winnerId = user.id;
+      (state as Record<string, any>).winnerId = user.id;
       await prisma.game.update({
         where: { id: game.id },
         data: { state },
